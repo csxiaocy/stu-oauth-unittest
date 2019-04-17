@@ -1,0 +1,53 @@
+# 使用最新node镜像
+image: node:latest
+
+before_script:
+#  安装ssh-agent，用于远程登录主机
+  - 'which ssh-agent || ( apt-get update -y && apt-get install openssh-client -y )'
+  - mkdir -p ~/.ssh
+  - eval $(ssh-agent -s)
+  - '[[ -f /.dockerenv ]] && echo -e "Host *\n\tStrictHostKeyChecking no\n\n" > ~/.ssh/config'
+
+# eslint 代码规范检查
+eslint_check:
+  stage: test
+  script:
+    - npm install eslint eslint-config-alloy babel-eslint eslint-config-egg --registry=https://registry.npm.taobao.org
+    - npm run lint
+
+# 发布gitlab页面
+pages:
+  stage: deploy
+  cache:
+    paths:
+      - node_modules/
+
+  script:
+    - npm install vuepress --registry=https://registry.npm.taobao.org
+    - npm run docs:build
+
+  # 把输出的代码放到public，gitlab page页面所在的位置
+  artifacts:
+    paths:
+      - public
+  only:
+    - master
+
+# 发布后台服务
+deploy_stu_oauth:
+  stage: deploy
+  script:
+    # ssh加入远程主机登录密钥
+    - ssh-add <(echo "LS0tLS1CRUdJTiBSU0EgUFJJVkFURSBLRVktLS0tLQpNSUlFb2dJQkFBS0NBUUVBM2pSa0xCVWkraUdQamdkZkRsa3czQzFYWGx6U1pLZkx4WEJQMWNydjEyOUhsNUxvCkFEejdDbk54OUNxMkM2akRXUGVkWHlyNURuRjVJRW03ejI5MXcyTFYybG5McHpmZFNob3R1d054Z09lczNwbjYKNmw5YlRldS9zS3dxWkVQK0lyZVB3TmJQY0NsaEkxTmxpNkFEeUZuQ0gyMzJJdHBoSU5iZzBPK0U3WHA5L09jMwphaXlqQjR4RnhLcEszZktCTCs4TVhlem96ZHk0OEZxM1JlUVgxN3c2SHNiQlhCdllrUHBEcUJkYXdIdWVoQU5YCkNJaG1kMlhKaWsrTHJzLzZEQmlZdWNXKzVCYjZWN2E3UHRVeHRHTUphamE3ZWNIR0w3UHIvcnlkY1V5bmc4Vk4KQTRKdnlGQ2w0QW9XcStkalRhYzZoMVlJLzBSTG9nOFpJUXIwRndJREFRQUJBb0lCQUFlYTNXN1F6bUNuTTJXVwpCUC9WdDZGaGYrTC81RWVEb3FyQVBFdEI1ZEdHd25tQ2txUW5jaVFhYldVQTdUZ2E3NHlrOU9MajhxQTI3QUZaCjVLNmx6dTcvKy9lOEtRY3hGMGJJL0pXdytYcUM4MXl2QW5KeER3dnNyS1BjVUpzYjVKL0Zqb3I0RHlOMGx4bUIKYWpGTUtiVDZ0WFVqNjArb0Q3anpBY0RFNGRUSzB4dGNUNkpMMGhJQkc0M0U4aml2aG9oSlE4SEZGenNUdHdWSwpUMEMrN2NsOHZNbDBjQ28zZVNGcGNxSTNBYlQ3R1EyUGhGQTFvWGN4dmxJeFhWTzVFSEJmWnJYWS9Ua2lkRTdFClpJVlVscUNKZkpPb21PU0ppSU9nbHJwRFRpMGNRMU4vMFlHYUIyRWZPN2J1dk1MZU5GQVA1Y1BLeWRJMlFvZFgKL0ZudjZwRUNnWUVBK1ljbjZRVEZqNjF5M3p1c3U1ZEE5UHd0QTBRV0NxVFk4K09UaUxaY29sM2xyU1NuWStkRAprMTgxNEx5QStqNmFDZjZHUVNDMnFCeC9pd3pkTVVzSTdHMHNxejRyUWxvMkhURXlyU1RyMXIxVkJHaFBoQ1NlClNIZzR2WGY0MTRxUkFqVU8xSG5DZXF0K3FrWWtqUG05Q2lXTjhSN2NnQVpoU2ZHeEpsY01wdjhDZ1lFQTQvZlAKb0xzUWhXUUNLdmpJbW1PWkdTMkErWk11RUxPeFBaTFlza04rODhZRTIzcC9EVUtxNjMvRW5BWnpIbTBFWXdiWgpxV1Y4YU1hQXVKNlV3d29qZTNzYUpGb3lZNlM4aE9hRmdZVnBpQWlCRFcvTEU1ZjR6SzJuYkw3cUVsS25EVTlFClZsMUtoRlVFai9SM2IwTWVPc1JTbWVnOWk1amtTcXBDWFBEL0N1a0NnWUJ1UFpJYVZxdFowTTJCWm9IbjF1a3gKMHYrb0E3cWhOVGRNZU96RFo1NEJkZTUwMGs3SnluQ0dlWGY2TkEzZmdTelk0WVE2M2RNVTdwSkN3b291cnZIZwpVbE43ekZtY1ZQSzNidmJ1bS9NOXlpUDNjSVpBNFZTMHU3aUZySzFadkxSWC8wenYvbU0zZ3ZEUkZYQXNnR0ZPClRFMHJpL0RxOXVhZ25wRWZXVElUelFLQmdGOE9VczRqa2tUOHFZYS9pKzRNZjZjbStUT1g4a3BXa3g0b29DRGMKMGcvVnp1cXhqazY2TU1qWDB1UjRNQUpNMU5weDNjcXJuWStXemMrdG1Ed25leG9lLzR5TzY1bnU5QWk2a29xcQpWWkc2Y2cxblF4ZGRkQW5za3ZaZU9QNEE1dFUrNnpEVDM2R0VUYzIwMHlSYXFUMDU1WE4xaWt3dUtXc1V5VzAxCnRETVpBb0dBSWtNSTZycmUrWnkzNDlwRDdTM3gxdlBWM3BsWTlRblJjZGd0ZEkwL2V4ZDhWaVh4SVVsKzRNT3IKaGs3dnZoazRFVjRrajFrVGkwaHo2dzMvcEpra09meGQ3VlJJL1pwaFUrc3VjeE1YcktoeFFrKzVXNFpobUhIVAowbFdtY1dLY3owMmV3VzR5NnhkbUlHaFIwZDdLR3gvWUtIZXRnL1RPQVB4T0pEa2wvVmM9Ci0tLS0tRU5EIFJTQSBQUklWQVRFIEtFWS0tLS0tCg==" | base64 -d)
+    # 远程登录主机，执行以下命令
+    - ssh -p22 candy@139.199.224.230
+      "cd /home/candy/syllabus/stu-oauth;
+      pwd;
+      npm run stop;
+      git pull;
+      cnpm install --production;
+      npm run start"
+  only:
+    - master
+
+

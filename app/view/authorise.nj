@@ -1,0 +1,24 @@
+<!--Oauth2.0 授权界面-->
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <title>authorise</title>
+</head>
+
+<body>
+    授权页面
+    <div>
+        <button id="authorise">授权</button>
+    </div>
+</body>
+
+</html>
+
+<script>
+    let button = document.getElementById('authorise')
+    button.onclick = () => {
+         window.location.href = '/oauth/authorize' + window.location.search
+    }
+</script>

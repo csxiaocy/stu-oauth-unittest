@@ -1,0 +1,38 @@
+@startuml
+title
+    课程表Oauth授权流程
+end title
+actor user
+participant user
+participant "第三方应用" as app
+participant "浏览器" as browser
+participant "业务后台" as syllabus
+participant "认证服务器" as oauth
+
+user -> app: 点击汕头大学账号登录
+app -> browser: 调起浏览器访问业务服务器
+browser -> syllabus: A. 访问业务服务器
+syllabus -> browser: 生成state，返回组装好的授权URL
+browser -> oauth: B. 访问授权URL
+alt 登录无效（未登录或登录过期）
+    oauth -> browser: 重定向至登录页面
+    browser -> user: 登录页面
+    user -> browser: 输入账号密码，点击登录
+    browser -> oauth: 登录
+end
+oauth -> browser: 授权网页
+browser -> user: 授权网页
+user -> browser: 用户点击授权
+browser -> oauth: 请求授权
+oauth -> browser: C. 重定向到指定url，\n并带上授权码code
+browser -> syllabus: 访问重定向的页面
+alt state与之前生成的不一致
+    syllabus -> browser: 授权失败，可能为CSRF攻击
+else state一致
+    syllabus -> oauth: D. code换取用去用户凭证token
+    oauth -> syllabus: 授权成功，返回token
+    syllabus -> browser: E. 授权成功，返回业务后台登录态
+    browser -> app: F. 获取业务后台登录态，退出浏览器
+    app -> user: 登录成功
+end
+@enduml

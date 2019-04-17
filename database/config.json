@@ -1,0 +1,29 @@
+{
+  "development": {
+    "username": "candy",
+    "password": "Candy666a",
+    "database": "stu-oauth_dev",
+    "host": "cdb-7g2jy6qr.gz.tencentcdb.com",
+    "port": 10053,
+    "dialect": "mysql",
+    "timezone": "+08:00"
+  },
+  "test": {
+    "username": "candy",
+    "password": "Candy666a",
+    "database": "stu-oauth_test",
+    "host": "cdb-7g2jy6qr.gz.tencentcdb.com",
+    "port": 10053,
+    "dialect": "mysql",
+    "timezone": "+08:00"
+  },
+  "production": {
+    "username": "candy",
+    "password": "Candy666a",
+    "database": "stu-oauth",
+    "host": "cdb-7g2jy6qr.gz.tencentcdb.com",
+    "port": 10053,
+    "dialect": "mysql",
+    "timezone": "+08:00"
+  }
+}

@@ -1,0 +1,40 @@
+<html>
+认证专用网页
+</html>
+<script type="text/javascript">
+    const appType = '{{appType}}'
+    const oauthData = JSON.parse('{{oauthData | dump |safe}}')
+
+    // 后台传入参数判断后台
+    switch(true){
+        case appType && appType==='android':
+        case navigator.userAgent.indexOf('Android') > -1 || u.indexOf('Adr') > -1:
+            androidCallback()
+            break
+        case appType && appType==='ios':
+        case !!navigator.userAgent.match(/\(i[^;]+;( U;)? CPU.+Mac OS X/):
+            iosCallback()
+            break
+        default:
+            otherCallback()
+    }
+    function iosCallback() {
+        console.log('客户端为iOS')
+        try{
+            window.webkit.messageHandlers.oauthCallback.postMessage(oauthData)
+        }catch (e) {
+            console.error('iOS 调用OC失败')
+        }
+    }
+    function androidCallback() {
+        console.log('客户端为Android')
+        try{
+            document.location = `js://webview?data=${encodeURIComponent(oauthData)}`
+        }catch (e) {
+            console.error('Android 调用失败')
+        }
+    }
+    function otherCallback() {
+        console.log('其他客户端',oauthData)
+    }
+</script>

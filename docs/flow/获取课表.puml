@@ -1,0 +1,33 @@
+@startuml
+title
+    查询课程方案
+end title
+participant "业务后台" as backend
+participant "开放平台" as open
+database "数据库" as db
+participant "学分制" as stu
+
+backend -> open: 请求课表
+
+alt 该用户获取课表过于频繁
+    open -> open_db: 查询课表数据库备份
+    open_db -> open: 用户课程
+else 没有超过获取课表频率限制
+    open -> stu:
+    alt 拉取学分制成功
+        stu -> open: 课程信息
+        open -> db: 更新数据库
+        db -> open: 存储成功
+    else 拉取学分制失败
+        stu -> open: 拉取学分制失败
+        open -> db: 查询课表数据库备份
+        db -> open: 课程信息
+    end
+end
+
+
+
+open -> backend: 课表信息
+
+
+@enduml
